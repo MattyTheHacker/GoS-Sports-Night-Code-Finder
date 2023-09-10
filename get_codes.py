@@ -2,13 +2,19 @@
 
 from requests.adapters import HTTPAdapter, Retry
 from bs4 import BeautifulSoup
+from multiprocessing import Pool
 from file_utils import *
 import requests
+import threading
+import time
 
 url = "https://www.guildofstudents.com/ents/event/7650/?code="
 
 LOWER_LIMIT = 000000
 UPPER_LIMIT = 999999
+
+# list of every 6 digit number
+VALID_CODES = [str(i).zfill(6) for i in range(LOWER_LIMIT, UPPER_LIMIT + 1)]
 
 # dictionary of "society name" : "code"
 codes = {}
@@ -17,7 +23,9 @@ session = requests.Session()
 retries = Retry(total=10, backoff_factor=30, status_forcelist=[500, 502, 503, 504])
 session.mount('http://', HTTPAdapter(max_retries=retries))
 
-def check_for_code(code):
+
+def check_for_code(code: str):
+    print("[INFO] Checking code: " + code)
     # takes in web page and checks if the code has worked, and if so, returns the society name
     # look for div class "ticket-box animated fadeInUpBig animate__slow"
     # find inner div, "event_tickets"
@@ -55,13 +63,16 @@ def check_for_code(code):
         print(["[DEBUG]", inner_ticket_box])
 
 
-
 def iterate_over_all_codes():
     # codes can be any 6 digits, so iterate over all of them
-    for i in range(LOWER_LIMIT, UPPER_LIMIT):
-        current_code = str(i).zfill(6)
-        print("[INFO] Checking code: " + current_code)
-        check_for_code(current_code)
+
+    with Pool() as pool:
+        pool.map(check_for_code, VALID_CODES)
+
+    # for i in range(100):
+    #     current_code = str(i).zfill(6)
+    #     print("[INFO] Checking code: " + current_code)
+    #     check_for_code(current_code)
 
 
 
