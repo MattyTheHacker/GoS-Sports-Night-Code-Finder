@@ -3,21 +3,32 @@
 from requests.adapters import HTTPAdapter, Retry
 from bs4 import BeautifulSoup
 from multiprocessing import Pool
-from file_utils import *
+from file_utils import save_dictionary_to_file
 import requests
 import threading
 import time
+import string
 
-url = "https://www.guildofstudents.com/ents/event/7650/?code="
 
-LOWER_LIMIT = 000000
-UPPER_LIMIT = 999999
+url = "https://www.guildofstudents.com/ents/event/9496/?code="
+
+LOWER_LIMIT = 000
+UPPER_LIMIT = 999
 
 # list of every 6 digit number
-VALID_CODES = [str(i).zfill(6) for i in range(LOWER_LIMIT, UPPER_LIMIT + 1)]
+# VALID_CODES = [str(i).zfill(6) for i in range(LOWER_LIMIT, UPPER_LIMIT + 1)]
+VALID_CODES: list[str] = [f"{a}{b}{c}{x}{y}{z}" 
+                          for a in string.ascii_uppercase 
+                          for b in string.ascii_uppercase
+                          for c in string.ascii_uppercase
+                          for x in string.digits 
+                          for y in string.digits 
+                          for z in string.digits]
+
+POSSIBLE_CODES: list[str] = [f"{a}{b}{c}300" for a in string.ascii_uppercase for b in string.ascii_uppercase for c in string.ascii_uppercase]
 
 # dictionary of "society name" : "code"
-codes = {}
+codes: dict[str, str] = {}
 
 session = requests.Session()
 retries = Retry(total=10, backoff_factor=30, status_forcelist=[500, 502, 503, 504])
@@ -25,7 +36,7 @@ session.mount('http://', HTTPAdapter(max_retries=retries))
 
 
 def check_for_code(code: str):
-    print("[INFO] Checking code: " + code)
+    # print("[INFO] Checking code: " + code)X``
     # takes in web page and checks if the code has worked, and if so, returns the society name
     # look for div class "ticket-box animated fadeInUpBig animate__slow"
     # find inner div, "event_tickets"
@@ -35,26 +46,23 @@ def check_for_code(code: str):
 
     soup = BeautifulSoup(page, 'html.parser')
 
-    outer_ticket_box = soup.find('div', class_="ticket-box visible-xs visible-sm d-block d-lg-none animated sr-only")
-
-    if outer_ticket_box is None:
-        print("[ERROR] Outer ticket box not found")
-        return
-
-    inner_ticket_box = outer_ticket_box.find('div', class_="event_tickets")
+    inner_ticket_box = soup.find('div', class_="event_tickets")
 
     if inner_ticket_box is None:
-        print("[ERROR] Inner ticket box not found")
+        # print("[ERROR] Inner ticket box not found")
         return
 
     # count the number of divs inside with the class="event_ticket"
+    # if len(inner_ticket_box.find_all('div', class_="event_ticket")) == 1:
+    #     print("[INFO] Standard tickets only, bad code")
+    #     return
     if len(inner_ticket_box.find_all('div', class_="event_ticket")) == 1:
-        print("[INFO] Standard tickets only, bad code")
-        return
-    elif len(inner_ticket_box.find_all('div', class_="event_ticket")) == 2:
-        print("[INFO] Valid Code!")
+        print("[INFO] Valid Code! " + code)
         # get the span inside the first div
         society_name = inner_ticket_box.find('div').find('span').text
+        # format: £6.00 (Swimming)
+        # Find the value in the brackets
+        society_name: str = society_name[society_name.find("(") + 1:society_name.find(")")]
         print("[INFO] Society name: " + society_name)
         # save to the dictionary
         codes[society_name] = code
@@ -67,7 +75,7 @@ def iterate_over_all_codes():
     # codes can be any 6 digits, so iterate over all of them
 
     with Pool() as pool:
-        pool.map(check_for_code, VALID_CODES)
+        pool.map(check_for_code, POSSIBLE_CODES)
 
     # for i in range(100):
     #     current_code = str(i).zfill(6)
