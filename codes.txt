@@ -1,0 +1,85 @@
+CYC300: Cycling
+DAR300: Darts
+ICE300: Ice Hockey
+SON300: Social Netball
+SQU300: Squash
+WAT300: Water Polo
+WBB300: Womens Basketball
+WEI300: Weightlifting
+WIN300: Windsurfing
+ECH300: Econ Hockey
+ECN300: Econ Netball
+MRU300: Mens Rugby Union
+MUA300: Muay Thai
+MWF300: MedSoc W-Football
+CEF300: Chem Eng Football
+CHE300: Cheerleading
+CHS300: ChemSoc Sport
+BRS300: Brumsurf
+BRU300: Brumski
+BUD300: BUDS
+MFO300: Mens Football
+MMA300: MMA
+MOT300: Motor Racing
+MOU300: Mountaineering
+FEN300: Fencing
+NUR300: Nursing Netball
+AME300: American Football
+ARC300: Archery
+ATH300: Athletics & XC
+AUS300: Aussie Rules
+LAC300: Lacrosse
+LIF300: Lifesaving
+ROD300: Roundnet
+ROW300: Rowing
+ULT300: Ultimate Frisbee
+NET300: Netball
+GOL300: Golf
+SAI300: Sailing
+SHA300: Shacklepuntas FC
+BIO300: Biosoc
+BOX300: Boxing
+GYM300: Gymnastics
+HAN300: Handball
+KIC300: Kickboxing
+KIF300: Kinvig Football
+KIH300: Kinvig Hockey
+KIN300: Kinvig Netball
+KOF300: Korfball
+POP300: Polo + Polocrosse
+PPF300: PPS Football
+PSF300: Pol Soc Football
+PSN300: PolSoc Netball
+RGL300: Rugby League
+COO300: Cool Runnings
+CRN300: CrimSoc Netball
+CRS300: CricSoc
+CSS300: CSS 6-a-side
+MEB300: Mens Basketball
+MEC300: Mens Cricket
+MEF300: Medsoc Fitclub
+MEH300: Medsoc Hockey
+HOC300: Hockey
+HOL300: Holdsworth Netball
+HSC300: History Sports Club
+JUD300: Judo
+KAR300: Karate
+SWM300: Swimming
+TAB300: Table Tennis
+WOC300: Womens Cricket
+WOF300: Womens Football
+WOR300: Womens Rugby Union
+DOD300: Dodgeball
+TOU300: Touch Rugby
+TRA300: Trampolining
+TRI300: Triathlon
+GAE300: Gaelic Football
+ENG300: Engineers Rugby
+EQU300: Equestrian
+VOL300: Volleyball
+BAC300: BACAS Football
+BAD300: Badminton
+BAL300: BALADS
+BEN300: Benchball
+JIB300: Jiu Jitsu Brazil
+JIU300: Jiu Jitsu

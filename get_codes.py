@@ -35,12 +35,8 @@ retries = Retry(total=10, backoff_factor=30, status_forcelist=[500, 502, 503, 50
 session.mount('http://', HTTPAdapter(max_retries=retries))
 
 
-def check_for_code(code: str):
-    # print("[INFO] Checking code: " + code)X``
-    # takes in web page and checks if the code has worked, and if so, returns the society name
-    # look for div class "ticket-box animated fadeInUpBig animate__slow"
-    # find inner div, "event_tickets"
-    # count the divs inside, if 1, failed, if 2, success
+def check_for_code(code: str) -> None:
+    # print("[INFO] Checking code: " + code)
 
     page = session.get(url + code).text
 
@@ -52,10 +48,6 @@ def check_for_code(code: str):
         # print("[ERROR] Inner ticket box not found")
         return
 
-    # count the number of divs inside with the class="event_ticket"
-    # if len(inner_ticket_box.find_all('div', class_="event_ticket")) == 1:
-    #     print("[INFO] Standard tickets only, bad code")
-    #     return
     if len(inner_ticket_box.find_all('div', class_="event_ticket")) == 1:
         print("[INFO] Valid Code! " + code)
         # get the span inside the first div
@@ -71,7 +63,7 @@ def check_for_code(code: str):
         print(["[DEBUG]", inner_ticket_box])
 
 
-def iterate_over_all_codes():
+def iterate_over_all_codes() -> None:
     # codes can be any 6 digits, so iterate over all of them
 
     with Pool() as pool:
