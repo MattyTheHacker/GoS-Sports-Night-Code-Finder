@@ -10,22 +10,12 @@ import time
 import string
 
 
-url = "https://www.guildofstudents.com/ents/event/9496/?code="
+url = "https://www.guildofstudents.com/ents/event/9497/?code="
 
 LOWER_LIMIT = 000
 UPPER_LIMIT = 999
 
-# list of every 6 digit number
-# VALID_CODES = [str(i).zfill(6) for i in range(LOWER_LIMIT, UPPER_LIMIT + 1)]
-VALID_CODES: list[str] = [f"{a}{b}{c}{x}{y}{z}" 
-                          for a in string.ascii_uppercase 
-                          for b in string.ascii_uppercase
-                          for c in string.ascii_uppercase
-                          for x in string.digits 
-                          for y in string.digits 
-                          for z in string.digits]
-
-POSSIBLE_CODES: list[str] = [f"{a}{b}{c}300" for a in string.ascii_uppercase for b in string.ascii_uppercase for c in string.ascii_uppercase]
+VALID_CODES = [str(i).zfill(6) for i in range(LOWER_LIMIT, UPPER_LIMIT + 1)]
 
 # dictionary of "society name" : "code"
 codes: dict[str, str] = {}
@@ -36,7 +26,7 @@ session.mount('http://', HTTPAdapter(max_retries=retries))
 
 
 def check_for_code(code: str) -> None:
-    # print("[INFO] Checking code: " + code)
+    print("[INFO] Checking code: " + code)
 
     page = session.get(url + code).text
 
@@ -67,7 +57,7 @@ def iterate_over_all_codes() -> None:
     # codes can be any 6 digits, so iterate over all of them
 
     with Pool() as pool:
-        pool.map(check_for_code, POSSIBLE_CODES)
+        pool.map(check_for_code, VALID_CODES)
 
     # for i in range(100):
     #     current_code = str(i).zfill(6)
