@@ -1,40 +1,41 @@
 # Program to automatically find access codes for sports night societies
 
+from typing import Generator
 from requests.adapters import HTTPAdapter, Retry
-from bs4 import BeautifulSoup
-from multiprocessing import Pool
+from bs4 import BeautifulSoup, NavigableString, Tag
+from multiprocessing import Pool, Manager
 from file_utils import save_dictionary_to_file
 import requests
 import threading
 import time
 import string
+import itertools
 
 
 url = "https://www.guildofstudents.com/ents/event/9497/?code="
 
-LOWER_LIMIT = 000
-UPPER_LIMIT = 999
+characters: list[str] = string.ascii_uppercase + string.digits
 
-VALID_CODES = [str(i).zfill(6) for i in range(LOWER_LIMIT, UPPER_LIMIT + 1)]
+POSSIBLE_CODES: Generator[str, None, None] = (f"{a}{b}{c}{d}{e}{f}" for a, b, c, d, e, f in itertools.product(characters, repeat=6))
 
-# dictionary of "society name" : "code"
-codes: dict[str, str] = {}
+def check_for_code(args: list[str]) -> None:
+    code: str = args[0]
+    valid_codes: dict[str, str] = args[1]
+    lock: threading.Lock = args[2]
+    # print("[INFO] Checking code: " + code)
 
-session = requests.Session()
-retries = Retry(total=10, backoff_factor=30, status_forcelist=[500, 502, 503, 504])
-session.mount('http://', HTTPAdapter(max_retries=retries))
+    session = requests.Session()
+    retries = Retry(total=10, backoff_factor=30, status_forcelist=[500, 502, 503, 504])
+    session.mount('http://', HTTPAdapter(max_retries=retries))
 
-
-def check_for_code(code: str) -> None:
-    print("[INFO] Checking code: " + code)
 
     page = session.get(url + code).text
 
     soup = BeautifulSoup(page, 'html.parser')
 
-    inner_ticket_box = soup.find('div', class_="event_tickets")
+    inner_ticket_box: Tag | NavigableString | None = soup.find('div', class_="event_tickets")
 
-    if inner_ticket_box is None:
+    if not inner_ticket_box or not isinstance(inner_ticket_box, Tag):
         # print("[ERROR] Inner ticket box not found")
         return
 
@@ -47,7 +48,9 @@ def check_for_code(code: str) -> None:
         society_name: str = society_name[society_name.find("(") + 1:society_name.find(")")]
         print("[INFO] Society name: " + society_name)
         # save to the dictionary
-        codes[society_name] = code
+        print("[INFO] Found valid code: " + code + " for society: " + society_name)
+        with lock:
+            valid_codes[society_name] = code
     else: 
         print("[ERROR] Unexpected number of DIVs... found: " + str(len(inner_ticket_box.find_all('div'))))
         print(["[DEBUG]", inner_ticket_box])
@@ -55,17 +58,17 @@ def check_for_code(code: str) -> None:
 
 def iterate_over_all_codes() -> None:
     # codes can be any 6 digits, so iterate over all of them
+    with Manager() as manager:
 
-    with Pool() as pool:
-        pool.map(check_for_code, VALID_CODES)
+        valid_codes: dict[str, str] = manager.dict()
+        lock: threading.Lock = manager.Lock()
 
-    # for i in range(100):
-    #     current_code = str(i).zfill(6)
-    #     print("[INFO] Checking code: " + current_code)
-    #     check_for_code(current_code)
+        with Pool(processes=10) as pool:
+            for _ in pool.imap_unordered(check_for_code, ((code, valid_codes, lock) for code in POSSIBLE_CODES), chunksize=500):
+                pass
 
+        save_dictionary_to_file(dict(valid_codes))
 
 
 if __name__ == "__main__":
     iterate_over_all_codes()
-    save_dictionary_to_file(codes)
