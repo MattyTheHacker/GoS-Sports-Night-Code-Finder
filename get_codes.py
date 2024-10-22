@@ -17,7 +17,7 @@ session = requests.Session()
 retries = Retry(total=10, backoff_factor=60, status_forcelist=[500, 502, 503, 504])
 session.mount('http://', HTTPAdapter(max_retries=retries))
 
-url = "https://www.guildofstudents.com/ents/event/9497/?code="
+url = "https://www.guildofstudents.com/ents/event/9499/?code="
 
 characters: list[str] = string.ascii_uppercase + string.ascii_lowercase + string.digits
 
